@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <!-- CSS only -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css">
+    <!-- JavaScript Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3" crossorigin="anonymous"></script>
+    <script src="scripts/scripts.js"></script>
+   
+</head>
+<body onload="carregarListaAleatoria()">
+    <div class="container vh-100">
+
+            <div class="row" style="height: 15%;">
+                <div class="">
+                    <h1>Avaliação - Html, CSS e JS</h1>
+                </div>
+
+                <nav class="navbar navbar-expand-lg bg-light">
+                    <div class="container-fluid">
+                      <a class="navbar-brand" href="index.html">Inicio</a>
+                      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                      </button>
+                      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                          <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="buscarProdutosCategoria('Mercado')">Mercado</a>
+                          </li>
+                          <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="buscarProdutosCategoria('Limpeza')">Limpeza</a>
+                          </li>
+                          <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="buscarProdutosCategoria('Higiene')">Higiene</a>
+                          </li>
+                          <li class="nav-item">
+                            <a class="nav-link" href="#" >Carrinho</a>
+                          </li>
+                        </ul>
+                        <div class="d-flex" role="search">
+                            <input class="form-control me-2" type="search" id = 'c_busca' placeholder="Digite parte do nome" aria-label="Search">
+                            <button class="btn btn-outline-success" type="button" onclick="buscarProdutos()">Buscar</button>
+                        </div>
+                      </div>
+                    </div>
+                  </nav>
+
+            </div>
+
+            <div class="row mt-4 mb-4">
+
+                <div class="col">
+
+                    <table class ="table" id="tbl_home">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Categoria</th>
+                                <th>Produto</th>
+                                <th>Valor</th>
+                                <th>Adicionar ao carrinho</th> 
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                        </tbody>
+                    </table>
+
+                </div>
+
+              
+
+            </div>
+            
+        <div class="row" style="height:10%">
+               
+        </div>
+
+
+        <script>
+            var base = []
+            updateBaseStorage()
+            base = getBaseItens()
+
+            updateCarrinhoStorage()
+
+            function buscarProdutosCategoria(categoria){
+                let baseF = []
+               
+                baseF = base.filter(e => {
+                    let tmp = e.segmento.toLowerCase() 
+                    return tmp.indexOf(categoria.toLowerCase()) > -1
+                })               
+
+                carregarTabela(baseF)
+            }
+
+
+            function buscarProdutos(){
+                let str = document.getElementById('c_busca').value
+                let baseF = []
+                if(str.length > 2){
+                    baseF = base.filter(e => {
+                        let tmp = e.nome.toLowerCase() 
+                        return tmp.indexOf(str.toLowerCase()) > -1
+                    })
+                }
+
+                carregarTabela(baseF)
+            }
+
+            function carregarTabela(lista){
+                
+                let table = ''
+                let cont = 0
+                lista.forEach(e => {
+                    cont += 1
+                    table += `  <tr>
+                                    <th>${cont}</th>
+                                    <td>${e.segmento}</td>
+                                    <td>${e.nome}</td>
+                                    <td>R$ ${parseFloat(e.preco).toFixed(2)}</td>
+                                    <td><button class="btn btn-outline-primary" id="editar" onclick="addCarrinho(${e.id})"><i class="bi bi-cart-plus"></i></button></td>
+                                </tr>`
+                })
+
+                document.getElementById('tbl_home').getElementsByTagName('tbody')[0].innerHTML = table
+
+            }
+
+            function carregarListaAleatoria(){
+
+                let itens_sorteados = []
+                
+                while (itens_sorteados.length < 12){
+                    let n = Math.floor(Math.random() * base.length)
+                    let check = 0
+                    itens_sorteados.forEach((e) => {
+                        if(n == e){
+                            check += 1
+                        }
+                    })                    
+                    if(check == 0)
+                        itens_sorteados.push(n)                    
+                }
+                
+                let baseF = []
+
+                itens_sorteados.forEach(e => {
+                    baseF.push(base[e])
+                })
+
+                carregarTabela(baseF)
+                
+            }
+
+        </script>
+    
+
+
+</body>
+</html>
