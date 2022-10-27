@@ -12,14 +12,10 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3" crossorigin="anonymous"></script>
     <script src="scripts/scripts.js">
     </script>
-    <script>
-        const parametros = new URLSearchParams(window.location.search)
-        const cat = parametros.get('cat')
-
-    </script>
    
 </head>
-    <body onload="carregarPagina()">
+<!--<body onload="carregarListaAleatoria()">-->
+    <body onload="mostrarCarrinho()">
     <div class="container vh-100">
 
             <div class="row" style="height: 15%;">
@@ -35,23 +31,19 @@
                       </button>
                       <div class="collapse navbar-collapse" id="navbarSupportedContent">
                         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                            <li class="nav-item">
-                                <a class="nav-link" href="index.html?cat=mercado">Mercado</a>
-                              </li>
-                              <li class="nav-item">
-                                <a class="nav-link" href="index.html?cat=Limpeza">Limpeza</a>
-                              </li>
-                              <li class="nav-item">
-                                <a class="nav-link" href="index.html?cat=Higiene" >Higiene</a>
-                              </li>
                           <li class="nav-item">
-                            <a class="nav-link" href="carrinho.html">Carrinho</a>
+                            <a class="nav-link" href="index.html?cat=mercado">Mercado</a>
                           </li>
-                        </ul>
-                        <div class="d-flex" role="search">
-                            <input class="form-control me-2" type="search" id = 'c_busca' placeholder="Digite parte do nome" aria-label="Search">
-                            <button class="btn btn-outline-success" type="button" onclick="buscarProdutos()">Buscar</button>
-                        </div>
+                          <li class="nav-item">
+                            <a class="nav-link" href="index.html?cat=Limpeza">Limpeza</a>
+                          </li>
+                          <li class="nav-item">
+                            <a class="nav-link" href="index.html?cat=Higiene" >Higiene</a>
+                          </li>
+                          <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="mostrarCarrinho()">Carrinho</a>
+                          </li>
+                        </ul>                        
                       </div>
                     </div>
                   </nav>
@@ -69,12 +61,18 @@
                                 <th>Categoria</th>
                                 <th>Produto</th>
                                 <th>Valor</th>
-                                <th>Adicionar ao carrinho</th> 
+                                <th>Quantidade</th>
+                                <th>Total</th>
+                                <th>Disponível</th>
+                                <th>Remover</th> 
                             </tr>
                         </thead>
                         <tbody>
 
                         </tbody>
+                        <tfoot>
+
+                        </tfoot>
                     </table>
 
                 </div>
@@ -92,19 +90,67 @@
             equalizarLocalStorage()
             var base = []
             updateBaseStorage()
-            base = getBaseItens()                        
+            base = getBaseItens()
+                        
+            function mostrarCarrinho(){
+                var carr = getCarrinho()
+                let table = ''
+                let cont = 0
+                let total = 0
+                
+                carr.forEach(e => {
+                    let item = base[getPosicaoItem(e.idProduto)]
+                    cont += 1
+                    table += `  <tr>
+                                    <th>${cont}</th>
+                                    <td>${item.segmento}</td>
+                                    <td>${item.nome}</td>
+                                    <td>R$ ${parseFloat(item.preco).toFixed(2)}</td>
+                                    <td><input type='text' value=${e.qtd} class='form-control d-inline' style='width:15%;' disabled>
+                                        <button class="btn btn-outline-primary d-inline" id="removerCarrinho" onclick="incrementarQtd(${e.idProduto},1)"><i class="bi bi-plus-lg"></i></button>
+                                        <button class="btn btn-outline-danger d-inline" id="removerCarrinho" onclick="decrementarQtd(${e.idProduto},1)"><i class="bi bi-dash-lg"></i></button>
+                                    </td>
+                                    <td>R$ ${parseFloat(item.preco * e.qtd).toFixed(2)}</td>
+                                    <td>${item.estoque}</td>
+                                    <td><button class="btn btn-outline-danger" id="removerCarrinho" onclick="removerCarrinho(${e.idProduto})"><i class="bi bi-cart-x-fill"></i></button></td>
+            
+                                    
+                                </tr>`
+                    
+                    total += (item.preco * e.qtd)
 
-            function carregarPagina(){     
-                console.log(cat)           
+                })           
 
-                if(cat != null){
-                    document.getElementsByTagName('body')[0].setAttribute('onload',`buscarProdutosCategoria('${cat}')`)
-                    buscarProdutosCategoria(cat)
-                }
-                else{
-                    document.getElementsByTagName('body')[0].setAttribute('onload',`carregarListaAleatoria()`)
-                    carregarListaAleatoria()
-                }
+                document.getElementById('tbl_home').getElementsByTagName('tbody')[0].innerHTML = table
+
+                table =`
+                        <tr>
+                            <th colspan=3>Total Compra</th>
+                            <th></th>
+                            <th></th>
+                            <th>R$ ${parseFloat(total).toFixed(2)}</th>
+                            <th></th>
+                            <th></th>
+                        </tr>`
+                
+                document.getElementById('tbl_home').getElementsByTagName('tfoot')[0].innerHTML = table
+
+                updateCarrinhoStorage()
+            }
+
+            function removerCarrinho(idProd){
+                removerItemCarrinho(idProd)
+                mostrarCarrinho()
+            }
+
+            function decrementarQtd(idProd, qtd){
+                diminuirQtdCarrinho(idProd,qtd)
+                mostrarCarrinho()
+            }
+
+            function incrementarQtd(idProd, qtd){
+                addCarrinho(idProd,qtd)
+                mostrarCarrinho()
             }
 
             function buscarProdutosCategoria(categoria){
@@ -122,7 +168,7 @@
             function buscarProdutos(){
                 let str = document.getElementById('c_busca').value
                 let baseF = []
-                if(str.length > 0){
+                if(str.length > 2){
                     baseF = base.filter(e => {
                         let tmp = e.nome.toLowerCase() 
                         return tmp.indexOf(str.toLowerCase()) > -1
@@ -143,17 +189,13 @@
                                     <td>${e.segmento}</td>
                                     <td>${e.nome}</td>
                                     <td>R$ ${parseFloat(e.preco).toFixed(2)}</td>
-                                    <td><button class="btn btn-outline-primary" id="editar" onclick="addItemCarrinho(${e.id},1)"><i class="bi bi-cart-plus"></i></button></td>                               
+                                    <td><button class="btn btn-outline-primary" id="editar" onclick="addCarrinho(${e.id},1)"><i class="bi bi-cart-plus"></i></button></td>
+                                    <td>${e.estoque}</td>
                                 </tr>`
                 })
 
                 document.getElementById('tbl_home').getElementsByTagName('tbody')[0].innerHTML = table
 
-            }
-
-            function addItemCarrinho(idProd,qtd){
-                addCarrinho(idProd,qtd)
-                carregarPagina()
             }
 
             function carregarListaAleatoria(){

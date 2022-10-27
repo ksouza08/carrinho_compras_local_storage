@@ -1,4 +1,28 @@
-var baseItens = [   {id:1,segmento:'mercado',nome:'Arroz',preco:6.6,estoque:56},
+var baseItens = []
+
+var carrinho = []
+
+objItem = {
+    
+    id: '',
+    segmento: '',
+    nome: '',
+    preco: 0,
+    estoque: 0
+
+}
+
+ const itemCarrinho = {
+    idProduto: -1,
+    qtd: 0
+}
+
+function equalizarLocalStorage(){
+
+    baseItens = carregarLista('baseItens') 
+
+    if(baseItens == null){
+        baseItens =[{id:1,segmento:'mercado',nome:'Arroz',preco:6.6,estoque:56},
                     {id:2,segmento:'mercado',nome:'Feijão',preco:3.84,estoque:27},
                     {id:3,segmento:'mercado',nome:'Macarrão',preco:7.04,estoque:59},
                     {id:4,segmento:'mercado',nome:'Batata',preco:6.1,estoque:48},
@@ -29,21 +53,18 @@ var baseItens = [   {id:1,segmento:'mercado',nome:'Arroz',preco:6.6,estoque:56},
                     {id:29,segmento:'limpeza',nome:'Pá',preco:9.11,estoque:10},
                     {id:30,segmento:'limpeza',nome:'Pano de chão',preco:9.33,estoque:35}]
 
-var carrinho = []
+        enviarStorage(baseItens,'baseItens')
+    }
 
-objItem = {
-    
-    id: '',
-    segmento: '',
-    nome: '',
-    preco: 0,
-    estoque: 0
+    carrinho = carregarLista('carrinho')
 
-}
+    if(carrinho == null) {
+        carrinho = []
+        enviarStorage(carrinho,'carrinho')
+        
+    }
 
-itemCarrinho = {
-    idProduto: 0,
-    qtd: 0
+
 }
 
 function carregarLista(storage) {
@@ -76,24 +97,96 @@ function updateCarrinhoStorage(){
     enviarStorage(carrinho,'carrinho')
 }
 
-function addCarrinho(idProduto){
-    let itemB = base.filter(e => {
-        return e.id == idProduto 
+function getPosicaoItem(idProduto){
+    let posicao = baseItens.findIndex((e) => {
+        return e.id == idProduto
     })
 
-    let itemC = carrinho.filter(e => {
-        return e.idProduto == itemB.id
-    })
-
-    if(itemC == null){
-        carrinho.push(itemB)
-    }else(
-        itemC.qtd += 1
-    )
-
-    updateCarrinhoStorage()
+    return posicao
 }
 
+
+
+function addCarrinho(idProduto,qtd){
+    
+    let itemC = carrinho.filter(e => {
+        return e.idProduto == idProduto
+    })
+    
+    if(saidaEstoque(idProduto, qtd)){
+        if(itemC.length == 0){
+            let tmp = {idProduto, qtd}      
+            carrinho.push(tmp)
+        }else(
+            itemC[0].qtd += qtd
+        )
+        updateCarrinhoStorage()
+    }
+    else{
+        alert('Item fora de estoque')
+    }
+    
+}
+
+
+function removerItemCarrinho(idProduto){
+    let posicao = carrinho.findIndex((e) => {
+        return e.idProduto == idProduto
+    })
+
+    entradaEstoque(idProduto,carrinho[posicao].qtd)
+
+    carrinho.splice(posicao,1)
+    updateCarrinhoStorage()
+
+}
+
+function diminuirQtdCarrinho(idProduto,qtd){
+    let posicao = carrinho.findIndex((e) => {
+        return e.idProduto == idProduto
+    })
+
+    if(carrinho[posicao].qtd == 1){
+        removerItemCarrinho(idProduto)
+    }else{       
+        if(entradaEstoque(idProduto, qtd)){
+            carrinho[posicao].qtd -= qtd
+            updateCarrinhoStorage()
+        }
+    }
+}
+
+function saidaEstoque(idProduto, qtdSaida){ 
+
+    let posicao = baseItens.findIndex((e) => {
+        return e.id == idProduto
+    })
+
+    if(posicao > -1 && baseItens[posicao].estoque >= qtdSaida){
+        baseItens[posicao].estoque-=qtdSaida
+        updateBaseStorage()
+        return true
+    }else{
+        return false
+    }
+
+}
+
+function entradaEstoque(idProduto, qtdEntrada){ 
+
+    let posicao = baseItens.findIndex((e) => {
+        return e.id == idProduto
+    })
+
+    if(posicao > -1){
+        baseItens[posicao].estoque+=qtdEntrada
+        updateBaseStorage()
+        return true
+    }else{
+        return false
+    }
+
+}
 
 
 
